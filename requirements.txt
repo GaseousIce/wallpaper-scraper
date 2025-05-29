@@ -1,0 +1,13 @@
+# Dependencies for the wallpaper scraper project
+requests>=2.32.3      # HTTP requests library
+beautifulsoup4>=4.13.4 # HTML parsing
+tqdm>=4.67.1          # Progress bars
+aiohttp>=3.12.2       # Async HTTP requests
+aiofiles>=24.1.0      # Async file operations
+# The following are part of the Python standard library and don't need to be installed:
+# asyncio - Async programming support (standard library)
+# pathlib - Path manipulation (standard library in Python 3.4+)
+# typing - Type annotations (standard library in Python 3.5+)
+typing_extensions>=4.13.2 # Type hint extensions
+# argparse - Command-line argument parsing (standard library)
+# logging - Logging utilities (standard library)

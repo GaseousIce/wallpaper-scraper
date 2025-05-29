@@ -1,0 +1,77 @@
+#!/bin/bash
+# Pre-commit hook to prevent accidental commit of API keys
+# Place this file in .git/hooks/pre-commit and make it executable: chmod +x .git/hooks/pre-commit
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+NC='\033[0m' # No Color
+
+echo -e "${YELLOW}Running pre-commit checks for API keys...${NC}"
+
+# Get list of staged files
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM)
+
+# Keywords to look for
+KEYWORDS=(
+  "UNSPLASH_API_KEY"
+  "WALLHAVEN_API_KEY"
+  "PIXABAY_API_KEY"
+  "api_key"
+  "apikey"
+  "api-key"
+  "secret"
+  "password"
+  "token"
+)
+
+# Regex patterns for potential API keys/tokens
+PATTERNS=(
+  "[a-zA-Z0-9_-]{32,}"  # Common API key pattern (32+ chars)
+  "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"  # UUID pattern
+)
+
+# Exit flag
+FOUND_SECRETS=0
+
+# Check each staged file
+for FILE in $STAGED_FILES; do
+  # Skip binary files
+  if [[ -f "$FILE" ]]; then
+    # Skip .env.example (this is allowed to have variable names)
+    if [[ "$FILE" == ".env.example" ]]; then
+      continue
+    fi
+    
+    # Check for keywords
+    for KEYWORD in "${KEYWORDS[@]}"; do
+      # Look for lines with keyword followed by actual value (not empty)
+      MATCHES=$(grep -l "$KEYWORD.*[=:][\"' ]*[^\"' ][^\"' ]*" "$FILE" || true)
+      if [[ -n "$MATCHES" ]]; then
+        echo -e "${RED}Potential API key found in $FILE: Contains '$KEYWORD' with value${NC}"
+        grep --color=always -n "$KEYWORD.*[=:][\"' ]*[^\"' ][^\"' ]*" "$FILE"
+        FOUND_SECRETS=1
+      fi
+    done
+    
+    # Check for pattern matches
+    for PATTERN in "${PATTERNS[@]}"; do
+      MATCHES=$(grep -E "$PATTERN" "$FILE" || true)
+      if [[ -n "$MATCHES" ]]; then
+        echo -e "${RED}Potential API key or token pattern found in $FILE${NC}"
+        grep --color=always -n -E "$PATTERN" "$FILE"
+        FOUND_SECRETS=1
+      fi
+    done
+  fi
+done
+
+if [[ $FOUND_SECRETS -eq 1 ]]; then
+  echo -e "${RED}Error: Potential API keys or secrets found in staged files${NC}"
+  echo -e "${YELLOW}Please remove the secrets before committing or use --no-verify to bypass this check (not recommended)${NC}"
+  exit 1
+else
+  echo -e "${GREEN}No API keys or secrets found in staged files${NC}"
+  exit 0
+fi
