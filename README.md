@@ -73,7 +73,3 @@ If you run into issues:
 - Check that your API keys are correct
 - Try a different search term
 - Use the `--verbose` flag for more detailed information
-
-## License
-
-MIT
