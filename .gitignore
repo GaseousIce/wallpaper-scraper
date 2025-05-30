@@ -31,6 +31,10 @@ config.json
 /wallpapers/
 /downloads/
 
+# Wiki documentation
+# Local wiki files that should be maintained elsewhere
+/wiki/
+
 # IDE settings
 # Editor-specific settings that vary between users
 .vscode/
