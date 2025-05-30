@@ -13,20 +13,23 @@ function show_help {
     echo "  --abstract   Download abstract wallpapers"
     echo "  --animals    Download animal wallpapers"
     echo "  --landscape  Download landscape wallpapers"
+    echo "  --anime      Download anime wallpapers (works best with Wallhaven)"
     echo "  --custom QUERY   Download wallpapers with custom query"
     echo "  --source SOURCE  Specify source (unsplash, wallhaven, pixabay, all)"
     echo "  --limit N        Limit to N wallpapers per source"
     echo "  --help           Display this help message"
     echo ""
     echo "Example: $0 --nature --source all --limit 10"
+    echo "Example: $0 --anime --source wallhaven --limit 20"
     exit 0
 }
 
-# Set defaults
+# Initialize variables
 QUERY=""
 SOURCE="unsplash"
 LIMIT=5
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ANIME_FLAG=""
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -53,6 +56,11 @@ while [[ $# -gt 0 ]]; do
             ;;
         --landscape)
             QUERY="landscape scenery"
+            shift
+            ;;
+        --anime)
+            QUERY="anime"
+            ANIME_FLAG="--anime"
             shift
             ;;
         --custom)
@@ -94,14 +102,17 @@ fi
 echo "Downloading wallpapers with query: $QUERY"
 echo "Source: $SOURCE"
 echo "Limit: $LIMIT per source"
+if [ -n "$ANIME_FLAG" ]; then
+    echo "Mode: Anime wallpapers"
+fi
 
 # Run the appropriate command
 if [ "$SOURCE" = "all" ]; then
     echo "Downloading from all sources..."
-    python "$SCRIPT_DIR/examples/multi_source_downloader.py" --query "$QUERY" --limit "$LIMIT"
+    python "$SCRIPT_DIR/examples/multi_source_downloader.py" --query "$QUERY" --limit "$LIMIT" $ANIME_FLAG
 else
     echo "Downloading from $SOURCE..."
-    python "$SCRIPT_DIR/main.py" --source "$SOURCE" --query "$QUERY" --limit "$LIMIT"
+    python "$SCRIPT_DIR/main.py" --source "$SOURCE" --query "$QUERY" --limit "$LIMIT" $ANIME_FLAG
 fi
 
 echo "Download complete!"

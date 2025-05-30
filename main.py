@@ -52,6 +52,7 @@ async def main():
     parser.add_argument('--orientation', choices=['landscape', 'portrait', 'squarish'], 
                         default='landscape', help='Image orientation')
     parser.add_argument('--resolution', help='Resolution filter (e.g., "1920x1080")')
+    parser.add_argument('--anime', action='store_true', help='Download anime wallpapers only')
     parser.add_argument('--verbose', '-v', action='store_true', help='Enable verbose logging')
     
     args = parser.parse_args()
@@ -107,14 +108,36 @@ async def main():
             if page > 1:
                 logger.info(f"Fetching page {page} of {args.pages}")
             
-            # Get wallpapers with the appropriate parameters
-            wallpapers = await scraper.get_wallpaper_list(
-                query=args.query or "",
-                category=args.category or "",
-                page=page,
-                orientation=args.orientation,
-                resolution=args.resolution
-            )
+            # Prepare parameters for get_wallpaper_list
+            kwargs = {
+                'query': args.query or "",
+                'page': page,
+                'orientation': args.orientation,
+                'resolution': args.resolution
+            }
+            
+            # Handle category parameter for Pixabay
+            if args.category and args.source == 'pixabay':
+                kwargs['category'] = args.category
+                
+            # Handle anime filtering based on source
+            if args.anime:
+                if args.source == 'wallhaven':
+                    # Wallhaven uses a 3-digit format for categories: General, Anime, People
+                    # 010 means only anime (disable general and people)
+                    kwargs['categories'] = "010"
+                    logger.info("Filtering for anime wallpapers only (Wallhaven)")
+                elif args.source in ['unsplash', 'pixabay']:
+                    # For other sources without direct anime category, use search query
+                    anime_query = "anime"
+                    if kwargs['query']:
+                        kwargs['query'] = f"{kwargs['query']} {anime_query}"
+                    else:
+                        kwargs['query'] = anime_query
+                    logger.info(f"Using search query '{kwargs['query']}' for anime wallpapers")
+            
+            # Get the wallpapers
+            wallpapers = await scraper.get_wallpaper_list(**kwargs)
             
             all_wallpapers.extend(wallpapers)
             
@@ -127,8 +150,17 @@ async def main():
             
             # Download wallpapers from this page
             if wallpapers:
-                downloaded = await scraper.download_all()
+                downloaded = []
+                # Create download tasks for each wallpaper
+                download_tasks = [scraper.download_wallpaper(wp) for wp in wallpapers]
+                # Run downloads with proper concurrency
+                download_results = await asyncio.gather(*download_tasks, return_exceptions=True)
+                
+                # Filter out exceptions and None results
+                downloaded = [r for r in download_results if isinstance(r, Path)]
+                
                 total_downloaded.extend(downloaded)
+                logger.info(f"Downloaded {len(downloaded)} wallpapers from page {page}")
         
         logger.info(f"Successfully downloaded {len(total_downloaded)} wallpapers")
         

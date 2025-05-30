@@ -25,11 +25,15 @@ logging.basicConfig(
 )
 logger = logging.getLogger('multi-source-downloader')
 
-async def download_from_unsplash(query, download_dir, api_key, limit=10):
+async def download_from_unsplash(query, download_dir, api_key, limit=10, anime_only=False):
     """Download wallpapers from Unsplash."""
     if not api_key:
         logger.warning("Skipping Unsplash: No API key provided")
         return []
+    
+    # If anime filter is enabled, add it to the query
+    if anime_only:
+        query = f"{query} anime" if query else "anime"
         
     logger.info(f"Downloading from Unsplash with query: '{query}'")
     
@@ -60,7 +64,7 @@ async def download_from_unsplash(query, download_dir, api_key, limit=10):
     logger.info(f"Downloaded {len(downloaded)} wallpapers from Unsplash")
     return downloaded
 
-async def download_from_wallhaven(query, download_dir, api_key=None, limit=10):
+async def download_from_wallhaven(query, download_dir, api_key=None, limit=10, anime_only=False):
     """Download wallpapers from Wallhaven."""
     logger.info(f"Downloading from Wallhaven with query: '{query}'")
     
@@ -72,10 +76,13 @@ async def download_from_wallhaven(query, download_dir, api_key=None, limit=10):
         max_concurrent_downloads=2
     )
     
+    # Set categories based on anime filter
+    categories = "010" if anime_only else "111"  # 010 = Anime only, 111 = General, Anime, People
+    
     # Get wallpapers
     wallpapers = await scraper.get_wallpaper_list(
         query=query,
-        categories="111",  # General, Anime, People
+        categories=categories,  
         purity="100",      # SFW only
         sorting="relevance"
     )
@@ -95,11 +102,15 @@ async def download_from_wallhaven(query, download_dir, api_key=None, limit=10):
     logger.info(f"Downloaded {len(downloaded)} wallpapers from Wallhaven")
     return downloaded
 
-async def download_from_pixabay(query, download_dir, api_key, limit=10):
+async def download_from_pixabay(query, download_dir, api_key, limit=10, anime_only=False):
     """Download wallpapers from Pixabay."""
     if not api_key:
         logger.warning("Skipping Pixabay: No API key provided")
         return []
+    
+    # If anime filter is enabled, add it to the query
+    if anime_only:
+        query = f"{query} anime" if query else "anime"
         
     logger.info(f"Downloading from Pixabay with query: '{query}'")
     
@@ -143,6 +154,7 @@ async def main():
     parser.add_argument('--sources', nargs='+', default=['unsplash', 'wallhaven', 'pixabay'],
                         choices=['unsplash', 'wallhaven', 'pixabay'],
                         help='Wallpaper sources to use')
+    parser.add_argument('--anime', action='store_true', help='Download anime wallpapers only')
     
     args = parser.parse_args()
     
@@ -156,6 +168,10 @@ async def main():
     
     logger.info(f"Downloading wallpapers to: {download_dir}")
     
+    # Log anime mode if enabled
+    if args.anime:
+        logger.info("Anime mode enabled - filtering for anime wallpapers only")
+    
     # Get API keys
     unsplash_api_key = os.environ.get('UNSPLASH_API_KEY') or config.get('unsplash_api_key')
     wallhaven_api_key = os.environ.get('WALLHAVEN_API_KEY') or config.get('wallhaven_api_key')
@@ -165,13 +181,13 @@ async def main():
     tasks = []
     
     if 'unsplash' in args.sources:
-        tasks.append(download_from_unsplash(args.query, download_dir, unsplash_api_key, args.limit))
+        tasks.append(download_from_unsplash(args.query, download_dir, unsplash_api_key, args.limit, args.anime))
         
     if 'wallhaven' in args.sources:
-        tasks.append(download_from_wallhaven(args.query, download_dir, wallhaven_api_key, args.limit))
+        tasks.append(download_from_wallhaven(args.query, download_dir, wallhaven_api_key, args.limit, args.anime))
         
     if 'pixabay' in args.sources:
-        tasks.append(download_from_pixabay(args.query, download_dir, pixabay_api_key, args.limit))
+        tasks.append(download_from_pixabay(args.query, download_dir, pixabay_api_key, args.limit, args.anime))
     
     # Run all tasks
     results = await asyncio.gather(*tasks, return_exceptions=True)
