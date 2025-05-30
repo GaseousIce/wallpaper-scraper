@@ -11,6 +11,7 @@ __pycache__/
 # These contain Python dependencies and shouldn't be committed
 /bin/
 /lib/
+/lib64
 /lib64/
 /include/
 /pyvenv.cfg
