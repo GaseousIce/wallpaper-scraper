@@ -8,6 +8,7 @@ A simple tool to download wallpapers from various websites while respecting thei
 - Multiple wallpaper sources (Unsplash, Wallhaven, Pixabay)
 - Search by keywords, categories, and more
 - Customizable download settings
+- Live download progress bars
 
 ## Quick Start
 
@@ -64,6 +65,8 @@ python main.py --source wallhaven --query "mountains" --limit 20
 - `--query`: Search terms
 - `--limit`: Maximum number of wallpapers to download
 - `--output`: Custom download folder
+
+Progress bars will automatically show download status for each file when downloading.
 
 See `python main.py --help` for all available options.
 
