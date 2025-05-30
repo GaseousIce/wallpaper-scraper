@@ -33,7 +33,7 @@ config.json
 
 # Wiki documentation
 # Local wiki files that should be maintained elsewhere
-/wiki/
+/wiki
 
 # IDE settings
 # Editor-specific settings that vary between users
