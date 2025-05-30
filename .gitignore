@@ -1,41 +1,56 @@
 # Python bytecode and compilation files
 # These are generated during execution and shouldn't be committed
-__pycache__/    # Directory containing bytecode files
-*.py[cod]       # .pyc, .pyo, and .pyd files
-src/__pycache__/
-src/scrapers/__pycache__/
-src/utils/__pycache__/
-examples/__pycache__/
-tests/__pycache__/
+__pycache__/
+*.py[cod]
+*$py.class
+**/__pycache__/
+**/*.py[cod]
+**/*$py.class
 
 # Virtual environment directories
 # These contain Python dependencies and shouldn't be committed
-bin/            # Executable scripts
-lib/            # Python libraries
-lib64/          # Symlink to lib/ on some systems
-include/        # Header files
-pyvenv.cfg      # Python venv configuration
+/bin/
+/lib/
+/lib64/
+/include/
+/pyvenv.cfg
+/.venv
+/env/
+/venv/
+/ENV/
 
 # Configuration with API keys
 # Don't commit files with sensitive information
-config.json     # Contains personal API keys (use config.json.example instead)
+config.json
+*.env
+.env
 
 # Downloaded wallpaper directories
 # Large binary files that shouldn't be in version control
-wallpapers/     # Main storage for downloaded images
-downloads/      # Alternative download location
+/wallpapers/
+/downloads/
 
 # IDE settings
 # Editor-specific settings that vary between users
-.vscode/        # Visual Studio Code settings
-.idea/          # PyCharm/IntelliJ settings
+.vscode/
+.idea/
+*.sublime-*
+*.swp
+*.swo
 
 # OS specific
 # Files automatically created by operating systems
-.DS_Store       # macOS directory metadata
-Thumbs.db       # Windows thumbnail cache
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 
 # Temporary files
 # Files created during development that shouldn't be committed
-*.tmp           # Temporary files
-*~              # Backup files created by some editors
+*.tmp
+*~
+*.bak
+*.log
